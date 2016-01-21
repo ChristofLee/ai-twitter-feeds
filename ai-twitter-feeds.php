@@ -36,7 +36,7 @@ if ( 'plugins.php' === $pagenow ) {
 function ai_twitter_update_notification_message( $plugin_data, $r ) {
     $data = file_get_contents( 'http://plugins.trac.wordpress.org/browser/ai-twitter-feeds/trunk/readme.txt?format=txt' );
 	$upgradetext = stristr( $data, '== Upgrade Notice ==' );	
-	$upgradenotice = stristr( $upgradetext, '*' );	
+	$upgradenotice = stristr( $upgradetext, '*' );	i
 	$output = "<div style='color:#EEC2C1;font-weight: normal;background: #C92727;padding: 10px;border: 1px solid #eed3d7;border-radius: 4px;'><strong style='color:rgb(253, 230, 61)'>Update Notice : </strong> ".$upgradenotice."</div>";
     return print $output;
 }
@@ -186,10 +186,15 @@ function ai_option_page(){ ?>
 	</div>
 <?php }
  
-function IMTConvertLinks( $status, $targetBlank=true, $linkMaxLen=250 ){	
-	$target=$targetBlank ? " target=\"_blank\" " : "";
-	$status = preg_replace("/((http:\/\/|https:\/\/)[^ )
-	]+)/e", "'<a href=\"$1\" title=\"$1\" $target >'. ((strlen('$1')>=$linkMaxLen ? substr('$1',0,$linkMaxLen).'...':'$1')).'</a>'", $status);
+function IMTConvertLinks( $status, $targetBlank=true, $linkMaxLen=250 ){
+	$target = $targetBlank ? 'target="_blank"' : '';
+	$status = preg_replace_callback(
+		"/((http:\/\/|https:\/\/)[^ )]+)/",
+		function($m) use ($target, $linkMaxLen){
+			return '<a href="'. $m[1] .'" title="'. $m[1] .'" '. $target .'> '. ((strlen( $m[1] ) >= $linkMaxLen ? substr($m[1],0,$linkMaxLen) . '...' : $m[1] )) . '</a>';
+		},
+		$status
+	);
 	$status = preg_replace("/(@([_a-z0-9\-]+))/i","<a href=\"http://twitter.com/$2\" title=\"Follow $2\" $target >$1</a>",$status);
 	$status = preg_replace("/\b([a-zA-Z][a-zA-Z0-9\_\.\-]*[a-zA-Z]*\@[a-zA-Z][a-zA-Z0-9\_\.\-]*[a-zA-Z]{2,6})\b/i","<a href=\"mailto://$1\" class=\"twitter-link\">$1</a>", $status);
 	$status = preg_replace("/(#([_a-z0-9\-]+))/i","<a href=\"https://twitter.com/search?q=$2\" title=\"Search $1\" $target >$1</a>",$status);
